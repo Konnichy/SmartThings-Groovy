@@ -1,4 +1,4 @@
-# Presence detection by monitoring hostapd events
+# Presence detection by monitoring a hostapd-based Wi-Fi access point
 
 The following set of components enable SmartThings to update presence of household members, based on whether their mobile device is connected to the home Wi-Fi access point or not.
 
@@ -11,7 +11,7 @@ The following set of components enable SmartThings to update presence of househo
 
 ### On the Linux Wi-Fi access point
 
-First, on the Linux machine already operating as a Wi-Fi access point, make sure the directive `ctrl_interface=` is enabled in `hostapd`'s configuration file (usually `/etc/hostapd/hostapd.conf`).
+First, on the Linux machine already operating as a Wi-Fi access point, make sure the directive `ctrl_interface=` is enabled in hostapd's configuration file (usually `/etc/hostapd/hostapd.conf`).
 
 Then:
 
@@ -25,7 +25,7 @@ sudo make install
 
 This installs the binary in `/usr/local/bin/` by default. You may want to change this path in the `Makefile` before running `make install`.
 
-Specific parameters you *have* to change are located in `hostapd_mon.service`. You'll have to adapt the two command-line arguments provided to `hostapd_mon`. The first one is path to the UNIX socket created by your instance of `hostapd`. The second one is the destination URL of events. Change the default hostname by your SmartThings hub hostname or IP address. Keep the protocol, port and path as they are.
+Specific parameters you **have** to change are located in `hostapd_mon.service`. You'll have to adapt the two command-line arguments provided to `hostapd_mon`. The first one is path to the UNIX socket created by your instance of hostapd. The second one is the destination URL of events. Change the default hostname by your SmartThings hub hostname or IP address. Keep the protocol, port and path as they are.
 
 ### On the SmartThings side
 
@@ -35,4 +35,4 @@ Specific parameters you *have* to change are located in `hostapd_mon.service`. Y
 
 That shoud be it!
 
-Now, you are able to base your automation on the presence of every person. For example, you can make the routine `I'm Back!` activate automatically when any person connects to the Wi-Fi. Or make the routine `Goodbye!` activate when nobody's home.
+Now, you are able to base your automation on the presence of every person. For example, you can make the routine 'I'm Back!' activate automatically when any person connects to the Wi-Fi. Or make the routine 'Goodbye!' activate when nobody's home.
