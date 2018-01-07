@@ -1,0 +1,9 @@
+Description=Hostapd events forwarder
+After=network.target multi-user.target hostapd.service
+
+[Service]
+Type=idle
+ExecStart=/bin/sh -c '/usr/local/bin/hostapd_mon /var/run/hostapd/wlp6s0 http://st-D052A8A66E240001:39500/presence'
+
+[Install]
+WantedBy=multi-user.target
