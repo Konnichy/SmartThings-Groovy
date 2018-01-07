@@ -27,12 +27,12 @@ definition(
 
 preferences {
     section("Person 1") {
-		paragraph "Enter the information of one person who must be considered Home when connected to Wi-Fi. You can add more people in sections below."
+        paragraph "Enter the information of one person who must be considered Home when connected to Wi-Fi. You can add more people in sections below."
         input "presence_sensor1", "capability.presenceSensor", title: "Which virtual presence sensor must be updated when this person arrives or leaves?", required: true
         input "mac_address1", "text", title: "What is the MAC address of the Wi-FI device hold by this person?", description: "00:00:00:00:00:00", required: true
     }
     section("Person 2") {
-		paragraph "Enter the information of another person who must be considered Home when connected to Wi-Fi."
+        paragraph "Enter the information of another person who must be considered Home when connected to Wi-Fi."
         input "presence_sensor2", "capability.presenceSensor", title: "Which virtual presence sensor must be updated when this person arrives or leaves?", required: false
         input "mac_address2", "text", title: "What is the MAC address of the Wi-FI device hold by this person?", description: "00:00:00:00:00:00", required: false
     }
@@ -41,56 +41,56 @@ preferences {
 }
 
 def installed() {
-	log.debug "Installed with settings: ${settings}"
+    log.debug "Installed with settings: ${settings}"
 
-	initialize()
+    initialize()
 }
 
 def updated() {
-	log.debug "Updated with settings: ${settings}"
+    log.debug "Updated with settings: ${settings}"
 
-	unsubscribe()
-	initialize()
+    unsubscribe()
+    initialize()
 }
 
 def initialize() {
-	// Source: https://community.smartthings.com/t/poll-or-subscribe-example-to-network-events/72862/15
-	subscribe(location, null, handleLANEvent, [filterEvents:false])
+    // Source: https://community.smartthings.com/t/poll-or-subscribe-example-to-network-events/72862/15
+    subscribe(location, null, handleLANEvent, [filterEvents:false])
 }
 
 def handleLANEvent(event)
 {
-	def message = parseLanMessage(event.value)
+    def message = parseLanMessage(event.value)
     
     // Get the HTTP path used on the first header line
     if (!message.header)
-    	return
+        return
     def path = message.header.split("\n")[0].split()[1]
     
     // Only handle the event if specifically directed to this application
-	if (path == "/presence") {
-		// Source: https://community.smartthings.com/t/poll-or-subscribe-example-to-network-events/72862/15
-		def slurper = new JsonSlurper();
-		def json = slurper.parseText(message.body)
+    if (path == "/presence") {
+        // Source: https://community.smartthings.com/t/poll-or-subscribe-example-to-network-events/72862/15
+        def slurper = new JsonSlurper();
+        def json = slurper.parseText(message.body)
         switch (json.event) {
-        	case "AP-STA-CONNECTED":
-            	if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
-              		log.info "${presence_sensor1.name} connected"
-					presence_sensor1.arrived()
+            case "AP-STA-CONNECTED":
+                if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
+                      log.info "${presence_sensor1.name} connected"
+                    presence_sensor1.arrived()
                 } else if (json.mac_address.toLowerCase() == mac_address2.toLowerCase()) {
-              		log.info "${presence_sensor2.name} connected"
-					presence_sensor2.arrived()
+                      log.info "${presence_sensor2.name} connected"
+                    presence_sensor2.arrived()
                 }
                 break
             case "AP-STA-DISCONNECTED":
-            	if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
-              		log.info "${presence_sensor1.name} disconnected"
-					presence_sensor1.departed()
+                if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
+                      log.info "${presence_sensor1.name} disconnected"
+                    presence_sensor1.departed()
                 } else if (json.mac_address.toLowerCase() == mac_address2.toLowerCase()) {
-              		log.info "${presence_sensor2.name} disconnected"
-					presence_sensor2.departed()
+                      log.info "${presence_sensor2.name} disconnected"
+                    presence_sensor2.departed()
                 }
                 break
         }
-	}
+    }
 }
