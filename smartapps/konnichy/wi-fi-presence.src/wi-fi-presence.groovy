@@ -18,11 +18,8 @@ definition(
     name: "Wi-Fi Presence",
     namespace: "konnichy",
     author: "Konnichy",
-    description: "This SmartApp enables the hub to receive presence events sent by the local Wi-Fi access point in order to update the presence state of household members.",
-    category: "My Apps",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+    description: "Allows the SmartThings hub to receive presence events sent by the local Wi-Fi access point to update the presence state of household members."
+)
 
 
 preferences {
