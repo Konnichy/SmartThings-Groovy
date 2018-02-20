@@ -19,6 +19,8 @@ definition(
     namespace: "konnichy",
     author: "Konnichy",
     description: "Allows the SmartThings hub to receive presence events sent by the local Wi-Fi access point to update the presence state of household members."
+    iconUrl: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn.png",
+    iconX2Url: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn@2x.png"
 )
 
 
