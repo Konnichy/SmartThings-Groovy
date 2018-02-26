@@ -19,24 +19,37 @@ definition(
     namespace: "konnichy",
     author: "Konnichy",
     description: "Allows the SmartThings hub to receive presence events sent by the local Wi-Fi access point to update the presence state of household members.",
+    category: "My Apps",
     iconUrl: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn.png",
-    iconX2Url: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn@2x.png"
+    iconX2Url: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn@2x.png",
+    iconX3Url: "http://cdn.device-icons.smartthings.com/Entertainment/entertainment15-icn@2x.png"
 )
 
+def settings() {
+    dynamicPage(name: "settings") {
+        // Display all configured presence sensors + 1 empty
+        for (int sensor_nb=1 ; ; sensor_nb++) {
+            section("Sensor $sensor_nb") {
+                input(name: "sensor" + sensor_nb, type: "capability.presenceSensor", title: "Which virtual presence sensor must be updated?", required: false, submitOnChange: true)
+                // For each configured presence sensor, display all associated MAC addresses + 1 empty
+                if (settings."sensor${sensor_nb}") {
+                    for (int macaddress_nb=1 ; ; macaddress_nb++) {
+                        input(name: "sensor" + sensor_nb + "_macaddress" + macaddress_nb, type: "text", title: "What MAC address do you want to monitor?", description: "00:00:00:00:00:00", required: false, submitOnChange: true)
+                        // Don't go beyond the empty MAC address
+                        if (!settings."sensor${sensor_nb}_macaddress${macaddress_nb}")
+                            break
+                    }
+                }
+            }
+            // Don't go beyond the empty sensor
+            if (!settings."sensor${sensor_nb}")
+                break
+        }
+    }
+}
 
 preferences {
-    section("Person 1") {
-        paragraph "Enter the information of one person who must be considered Home when connected to Wi-Fi. You can add more people in sections below."
-        input "presence_sensor1", "capability.presenceSensor", title: "Which virtual presence sensor must be updated when this person arrives or leaves?", required: true
-        input "mac_address1", "text", title: "What is the MAC address of the Wi-FI device hold by this person?", description: "00:00:00:00:00:00", required: true
-    }
-    section("Person 2") {
-        paragraph "Enter the information of another person who must be considered Home when connected to Wi-Fi."
-        input "presence_sensor2", "capability.presenceSensor", title: "Which virtual presence sensor must be updated when this person arrives or leaves?", required: false
-        input "mac_address2", "text", title: "What is the MAC address of the Wi-FI device hold by this person?", description: "00:00:00:00:00:00", required: false
-    }
-    section("Other parameters") {
-    }
+    page(name: "settings", install: true, uninstall: true)
 }
 
 def installed() {
@@ -57,6 +70,20 @@ def initialize() {
     subscribe(location, null, handleLANEvent, [filterEvents:false])
 }
 
+def findPresenceSensor(mac_address) {
+    for (int sensor_nb=1 ; settings."sensor${sensor_nb}" ; sensor_nb++) {
+        for (int macaddress_nb=1 ; settings."sensor${sensor_nb}_macaddress${macaddress_nb}" ; macaddress_nb++) {
+            if (settings."sensor${sensor_nb}_macaddress${macaddress_nb}".equalsIgnoreCase(mac_address)) {
+                // found it!
+                return settings."sensor${sensor_nb}"
+            }
+        }
+    }
+
+    // not found
+    return null
+}
+
 def handleLANEvent(event)
 {
     def message = parseLanMessage(event.value)
@@ -73,21 +100,21 @@ def handleLANEvent(event)
         def json = slurper.parseText(message.body)
         switch (json.event) {
             case "AP-STA-CONNECTED":
-                if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
-                      log.info "${presence_sensor1.name} connected"
-                    presence_sensor1.arrived()
-                } else if (json.mac_address.toLowerCase() == mac_address2.toLowerCase()) {
-                      log.info "${presence_sensor2.name} connected"
-                    presence_sensor2.arrived()
+                // Search which presence sensor is associated with the connected MAC address
+                def sensor = findPresenceSensor(json.mac_address)
+                if (sensor) {
+                    // Update the presence sensor
+                    log.info "${sensor.name} arrived"
+                    sensor.arrived()
                 }
                 break
             case "AP-STA-DISCONNECTED":
-                if (json.mac_address.toLowerCase() == mac_address1.toLowerCase()) {
-                      log.info "${presence_sensor1.name} disconnected"
-                    presence_sensor1.departed()
-                } else if (json.mac_address.toLowerCase() == mac_address2.toLowerCase()) {
-                      log.info "${presence_sensor2.name} disconnected"
-                    presence_sensor2.departed()
+                // Search which presence sensor is associated with the disconnected MAC address
+                def sensor = findPresenceSensor(json.mac_address)
+                if (sensor) {
+                    // Update the presence sensor
+                    log.info "${sensor.name} departed"
+                    sensor.departed()
                 }
                 break
         }
