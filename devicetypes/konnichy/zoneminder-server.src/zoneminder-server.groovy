@@ -10,10 +10,10 @@
  *    - State changes are deferred when device is off (change will occur when device is switched on)
  *
  *  Known bugs and limitations:
- *    - (Bug) Password is changed to actual stars each time the configuration screen is opened
- *    - (Bug) The device icon in the app stays gray even when the device is on
+ *    - (Bug in the new SmartThings only) Password is changed to actual stars each time the configuration screen is opened
+ *    - (Bug in the new SmartThings only) The device icon in the app stays gray even when the device is on
+ *    - (Limitation from ZoneMinder) Accentuated characters are not supported
  *    - HTTPS in not supported (password and access tokens are sent in cleartext!)
- *    - (Limitation from ZoneMinder) Accentuated characters are not supported (from web gui neither)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -41,7 +41,7 @@ metadata {
 
         input(type: "paragraph", title: "", description: "ZoneMinder states")
         input("StateOff", "text", title: "State when the device is switched off", required: false)
-        input("State1", "text", title: "State when the dimmer is set to 1 %", required: false)
+        input("State01", "text", title: "State when the dimmer is set to 1 %", required: false)
         input("State10", "text", title: "State when the dimmer is set to 10 %", required: false)
         input("State20", "text", title: "State when the dimmer is set to 20 %", required: false)
         input("State30", "text", title: "State when the dimmer is set to 30 %", required: false)
@@ -52,6 +52,24 @@ metadata {
         input("State80", "text", title: "State when the dimmer is set to 80 %", required: false)
         input("State90", "text", title: "State when the dimmer is set to 90 %", required: false)
         input("State100", "text", title: "State when the dimmer is set to 100 %", required: false)
+    }
+
+    // The interface of this app would have been much more suited to ZoneMinder if designed for SmartThings Classic.
+    // But I designed it for the newer version, which doesn't allow customizing tiles anymore. So it is what it is.
+    // I nevertheless added the 'tiles' section below for compatibility with the Classic app, but I made the choice of just making it look like the new version.
+    tiles(scale: 2) {
+        standardTile("switch", "device.switch", width: 4, height: 4, canChangeIcon: true) {
+            state "off", label: '${currentValue}', action: "switch.on",
+                  icon: "st.switches.switch.off", backgroundColor: "#ffffff"
+            state "on", label: '${currentValue}', action: "switch.off",
+                  icon: "st.switches.switch.on", backgroundColor: "#00a0dc"
+        }
+        controlTile("level", "device.level", "slider", width: 2, height: 4, inactiveLabel: false, range:"(1..100)") {
+            state "level", action:"switch level.setLevel"
+        }
+
+        main("switch")
+        details("switch", "level")
     }
 }
 
@@ -137,7 +155,7 @@ private getState(level) {
     }
     
     // Get the state name for the rounded level
-    def stateNames = [ State1, State10, State20, State30, State40, State50, State60, State70, State80, State90, State100 ]
+    def stateNames = [ State01, State10, State20, State30, State40, State50, State60, State70, State80, State90, State100 ]
     def state = "${stateNames[(int) (level / 10)]}"
     if (state == "null") {
         log.debug("No state is defined for level ${level}")
