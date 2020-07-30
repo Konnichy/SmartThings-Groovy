@@ -13,7 +13,7 @@
  *    - (Bug) Password is changed to actual stars each time the configuration screen is opened
  *    - (Bug) The device icon in the app stays gray even when the device is on
  *    - HTTPS in not supported (password and access tokens are sent in cleartext!)
- *    - (To test) Accentuated characters?
+ *    - (Limitation from ZoneMinder) Accentuated characters are not supported (from web gui neither)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
